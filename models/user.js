@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
       validator(link) {
         return validator.isURL(link);
       },
+      message: (url) => `${url.value} некоректный адрес`,
     },
     required: true,
   },

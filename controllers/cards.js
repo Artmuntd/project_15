@@ -1,26 +1,37 @@
 const Card = require('../models/card');
 
-module.exports.createCard = (req, res) => {
-  const { name, link } = req.body;
-  const likes = [];
-  Card.create({
-    name, link, owner: req.user._id, likes,
-  })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(400).send({ message: err.message }));
-};
-module.exports.getCard = (req, res) => {
+const getCard = (req, res) => {
   Card.find({})
-    .then((cards) => res.send({ data: cards }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .then((card) => res.send({ data: card }))
+    .catch((err) => res.status(500).send({ message: 'Произошла ошибка', err }));
 };
 
-module.exports.deletedCard = (req, res) => {
-  Card.findById(req.params.cardid)
-    .orFail(new Error('Карточки нет в базе'))
-    .then((cardid) => {
-      cardid.remove();
-      return res.send({ data: cardid });
+const createCard = (req, res, next) => {
+  const { name, link } = req.body;
+  console.log(req.user._id);
+  console.log(req.body);
+  Card.create({ name, link, owner: req.user._id })
+    .then((card) => res.send({ data: card }))
+    .catch((err) => {
+      if (err) {
+        res.status(500).send({ message: 'Произошла ошибка', err });
+      }
+      next(err);
+    });
+};
+
+const deleteCard = (req, res) => {
+  Card.findByIdAndRemove(req.params.id)
+    .then((card) => {
+      if (card) {
+        res.send({ message: `Карточка с _id:${req.params.id} успешно удалена из базы данных` });
+      }
+      return res.status(404).send({ message: `Карточка с _id:${req.params.id} не найдена в базе данных` });
     })
-    .catch((err) => res.status(404).send({ message: err.message }));
+    .catch((err) => res.status(500).send({ message: 'Произошла ошибка', err }));
+};
+module.exports = {
+  deleteCard,
+  createCard,
+  getCard,
 };
