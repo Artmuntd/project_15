@@ -34,8 +34,10 @@ app.use('*', (req, res) => {
 });
 
 // eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => res.status(err.statusCode || 500)
-  .send({ status: err.status, message: err.message }));
+app.use((err, req, res, next) => {
+  res.status(err.statusCode || 500)
+    .send({ status: err.status, message: err.message });
+});
 
 app.listen(PORT, () => {
   console.log(` Сервер слушает ${PORT}`);
