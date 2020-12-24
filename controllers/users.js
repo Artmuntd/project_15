@@ -1,20 +1,33 @@
+const mongoose = require('mongoose');
 const User = require('../models/user');
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка', err }));
+    .catch((err) => res.status(400).send({ message: err.message }));
 };
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка', err }));
+    .catch((err) => res.status(500).send({ message: 'Нет пользователя с таким id', err }));
 };
 
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params.id)
-    .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: 'Нет пользователя с таким id', err }));
+  const isValid = mongoose.Types.ObjectId.isValid(req.params.userid);
+  if (!isValid) {
+    return res.status(400).send({ message: 'Неверный формат' });
+  }
+
+  try {
+    User.findById(req.params.userid)
+      .orFail(new Error('Ошибка на сервере'))
+      .then((user) => res.send({ data: user }))
+      .catch((err) => res.status(404).send({ message: 'Нет пользователя с таким id', err }));
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+
+  return null;
 };
