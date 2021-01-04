@@ -2,30 +2,44 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
-
   name: {
     type: String,
+    required: true,
     minlength: 2,
     maxlength: 30,
-    required: true,
+    validate: {
+      validator: (value) => validator.isAlpha(value),
+      message: 'Некорректное имя',
+    },
   },
-
   about: {
     type: String,
+    required: true,
     minlength: 2,
     maxlength: 30,
-    required: true,
   },
-
   avatar: {
     type: String,
-    validate: {
-      validator(link) {
-        return validator.isURL(link);
-      },
-      message: (url) => `${url.value} некоректный адрес`,
-    },
     required: true,
+    validate: {
+      validator: (value) => validator.isURL(value),
+      message: 'Невалидная ссылка на аватар',
+    },
+  },
+  email: {
+    type: String,
+    unique: true,
+    validate: {
+      validator(v) {
+        return /[A-Za-z0-9]+@[A-Za-z0-9]+\.[a-z]{2,}/.test(v);
+      },
+      message: (props) => `${props.value} некорректный адрес электронной почты!`,
+    },
+  },
+  password: {
+    type: String,
+    required: true,
+    select: false,
   },
 });
 
