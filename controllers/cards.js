@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 const mongoose = require('mongoose');
 const Card = require('../models/card');
 
@@ -20,45 +21,23 @@ const createCard = (req, res, next) => {
 };
 
 const deleteCard = (req, res) => {
-  try {
-    const isValid = mongoose.Types.ObjectId.isValid(req.params.cardid);
-    if (!isValid) {
-      const err = new Error('Неверный формат');
-      err.name = 'ParseError';
-      throw err;
-    }
-
-    Card.findByIdAndRemove(req.params.cardid)
-      .then((card) => {
-        if (!card) {
-          const err = new Error(`Карточка с _id:${req.params.cardid} не найдена в базе данных`);
-          err.name = 'NotFoundError';
-          throw err;
-        }
-
-        return res.send({ message: `Карточка с _id:${req.params.cardid} успешно удалена из базы данных` });
-      })
-      .catch((err) => {
-        if (err.name === 'NotFoundError') {
-          return res.status(404).send({ message: err.message });
-        }
-
-        return res.status(500).send({ message: err.message });
-      });
-  } catch (err) {
-    if (err.name === 'ParseError') {
-      return res.status(400).send({ message: err.message });
-    }
-    return res.status(500).send({ message: err.message });
-  }
-  return null;
+  Card.findById(req.params.id)
+    .then((card) => {
+      if (!card) {
+        return Promise.reject(new Error(`Карточка с _id:${req.params.id} не найдена в базе данных`));
+      }
+      const { owner } = card;
+      return owner;
+    })
+    .then((owner) => {
+      if (req.user._id === owner.toString()) {
+        return Card.findByIdAndRemove(req.params.id);
+      }
+      return Promise.reject(new Error('нет доступа для удаления карточки'));
+    })
+    .then(() => res.status(200).send({ message: `Карточка с _id:${req.params.id} успешно удалена из базы данных` }))
+    .catch((err) => res.status(500).send({ message: err.message }));
 };
-
-// var e = new Error('Неверные входные данные'); // e.name равно 'Error'
-// e.name = 'ParseError';
-// throw e;
-
-// .orFail(new Error('Ошибка на сервере'))
 
 module.exports = {
   deleteCard,

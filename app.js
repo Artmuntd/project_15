@@ -34,7 +34,18 @@ app.use('/cards', cardsRouter);
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'ресурс не найден' });
 });
+const catchErrorMIddleware = ((err, req, res, next) => {
+  if (err instanceof SyntaxError) {
+    console.error(err);
+    return res.status(err.status).send({ status: err.status, message: err.message });
+  }
+  // if (err.status(500)) {
+  //     return res.status(500).send({ message: err.message });
+  // }
+  return next();
+});
 
+app.use(catchErrorMIddleware);
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   res.status(err.statusCode || 500)
