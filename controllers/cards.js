@@ -21,21 +21,21 @@ const createCard = (req, res, next) => {
 };
 
 const deleteCard = (req, res) => {
-  Card.findById(req.params.id)
+  Card.findById(req.params.cardid)
     .then((card) => {
       if (!card) {
-        return Promise.reject(new Error(`Карточка с _id:${req.params.id} не найдена в базе данных`));
+        return Promise.reject(new Error(`Карточка с _id:${req.params.cardid} не найдена в базе данных`));
       }
       const { owner } = card;
       return owner;
     })
     .then((owner) => {
       if (req.user._id === owner.toString()) {
-        return Card.findByIdAndRemove(req.params.id);
+        return Card.findByIdAndRemove(req.params.cardid);
       }
       return Promise.reject(new Error('нет доступа для удаления карточки'));
     })
-    .then(() => res.status(200).send({ message: `Карточка с _id:${req.params.id} успешно удалена из базы данных` }))
+    .then(() => res.status(200).send({ message: `Карточка с _id:${req.params.cardid} успешно удалена из базы данных` }))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
