@@ -28,13 +28,13 @@ app.use(helmet());
 
 app.use(requestLogger);
 
-app.post('/signin', celebrate({
+app.post('api/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),
 }), login);
-app.post('/signup', celebrate({
+app.post('api/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     about: Joi.string().required().min(2).max(30),
@@ -45,12 +45,12 @@ app.post('/signup', celebrate({
 }), createUser);
 app.use(auth);
 
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
+app.use('api/users', usersRouter);
+app.use('api/cards', cardsRouter);
 
 app.use(errorLogger);
 
-app.get('/crash-test', () => {
+app.get('api/crash-test', () => {
   setTimeout(() => {
     throw new Error('Сервер сейчас упадёт');
   }, 0);
