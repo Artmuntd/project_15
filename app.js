@@ -11,7 +11,6 @@ const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-//const BadGatewayError = require('./errors/bad-gateway-err');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -54,8 +53,8 @@ app.post('/signup', celebrate({
 
 app.use(auth);
 
-app.use('/api/users', usersRouter);
-app.use('/api/cards', cardsRouter);
+app.use('/users', usersRouter);
+app.use('/cards', cardsRouter);
 
 app.use(errorLogger);
 
