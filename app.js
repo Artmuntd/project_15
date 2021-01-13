@@ -54,7 +54,7 @@ app.post('/signup', celebrate({
 
 app.use(auth);
 
-app.use('/users', usersRouter);
+app.use('/api/users', usersRouter);
 app.use('/api/cards', cardsRouter);
 
 app.use(errorLogger);
