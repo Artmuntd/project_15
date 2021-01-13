@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../models/user');
+const NotFoundError = require('../errors/not_found_err');
+const ErrRequest = require('../errors/err_request');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -55,14 +57,14 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUserById = (req, res) => {
   const isValid = mongoose.Types.ObjectId.isValid(req.params.userid);
   if (!isValid) {
-    return res.status(400).send({ message: 'Неверный формат' });
+    return Promise.reject(new ErrRequest('Неверный формат'));
   }
 
   try {
     User.findById(req.params.userid)
       .orFail(new Error('Ошибка на сервере'))
       .then((user) => res.send({ data: user }))
-      .catch((err) => res.status(404).send({ message: 'Нет пользователя с таким id', err }));
+      .catch((err) => new NotFoundError('Нет пользователя с таким id', err));
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -74,7 +76,6 @@ module.exports.login = (req, res) => {
   const { email, password } = req.body;
   return User.findUser(email, password)
     .then((user) => {
-      // const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
       res.send({ token });
       res.cookie('jwt', token, {

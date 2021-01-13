@@ -1,6 +1,8 @@
 // eslint-disable-next-line no-unused-vars
 const mongoose = require('mongoose');
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not_found_err');
+const Prohibition = require('../errors/prohibition_err');
 
 const getCard = (req, res) => {
   Card.find({})
@@ -24,7 +26,7 @@ const deleteCard = (req, res) => {
   Card.findById(req.params.cardid)
     .then((card) => {
       if (!card) {
-        return Promise.reject(new Error(`Карточка с _id:${req.params.cardid} не найдена в базе данных`));
+        return Promise.reject(new NotFoundError(`Карточка с _id:${req.params.cardid} не найдена в базе данных`));
       }
       const { owner } = card;
       return owner;
@@ -33,10 +35,10 @@ const deleteCard = (req, res) => {
       if (req.user._id === owner.toString()) {
         return Card.findByIdAndRemove(req.params.cardid);
       }
-      return Promise.reject(new Error('нет доступа для удаления карточки'));
+      return Promise.reject(new Prohibition('нет доступа для удаления карточки'));
     })
     .then(() => res.status(200).send({ message: `Карточка с _id:${req.params.cardid} успешно удалена из базы данных` }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => res.status(err.statusCode).send({ message: err.message }));
 };
 
 module.exports = {
