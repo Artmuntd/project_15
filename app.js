@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { celebrate, Joi } = require('celebrate');
 const { errors } = require('celebrate');
-
+const NotFoundError = require('./errors/not_found_err');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
@@ -58,14 +58,13 @@ app.use('/cards', cardsRouter);
 
 app.use(errorLogger);
 
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'ресурс не найден' });
-});
+// eslint-disable-next-line no-unused-vars
+app.use('*', (req, res) => new NotFoundError('Ресурс не найден'));
 
 app.use(errors());
 
 // eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
   const { statusCode = 500, message } = err;
   res
     .status(statusCode)

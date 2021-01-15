@@ -4,4 +4,5 @@
 #### Сервер запускается командами npm start и npm run dev на 3000 port на localhost.
 
 #### найти сайт можно: http://www.artmuntd.students.nomoreparties.xyz/ http://artmuntd.students.nomoreparties.xyz/
+####  ip: 130.193.48.114 ;
 #### v1.1
