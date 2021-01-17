@@ -65,6 +65,11 @@ app.use(errors());
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
+  if (err.name === 'ValidationError') {
+    // eslint-disable-next-line no-param-reassign
+    err.statusCode = 400;
+  }
+
   const { statusCode = 500, message } = err;
   res
     .status(statusCode)
