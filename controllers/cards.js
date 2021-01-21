@@ -1,35 +1,36 @@
+// eslint-disable-next-line no-unused-vars
+const mongoose = require('mongoose');
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not_found_err');
+const Prohibition = require('../errors/prohibition_err');
 
-const getCard = (req, res) => {
+const getCard = (req, res, next) => {
   Card.find({})
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка', err }));
+    .catch(next);
 };
 
 const createCard = (req, res, next) => {
-  const { name, link } = req.body;
-  console.log(req.user._id);
-  console.log(req.body);
-  Card.create({ name, link, owner: req.user._id })
+  const { name, link, _id } = req.body;
+  Card.create({ name, link, owner: _id })
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err) {
-        res.status(500).send({ message: 'Произошла ошибка', err });
-      }
-      next(err);
-    });
+    .catch(next);
 };
 
-const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.id)
+const deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardid)
+    .orFail(() => new NotFoundError(`Карточка с _id:${req.params.cardid} не найдена в базе данных`))
     .then((card) => {
-      if (card) {
-        res.send({ message: `Карточка с _id:${req.params.id} успешно удалена из базы данных` });
+      const { owner } = card;
+      if (req.user._id === owner.toString()) {
+        return Card.findByIdAndRemove(req.params.cardid);
       }
-      return res.status(404).send({ message: `Карточка с _id:${req.params.id} не найдена в базе данных` });
+      return Promise.reject(new Prohibition('нет доступа для удаления карточки'));
     })
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка', err }));
+    .then(() => res.status(200).send({ message: `Карточка с _id:${req.params.cardid} успешно удалена из базы данных` }))
+    .catch(next);
 };
+
 module.exports = {
   deleteCard,
   createCard,
